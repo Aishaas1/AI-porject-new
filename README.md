@@ -101,6 +101,119 @@ GOLD_MODEL_PATH=artifacts/gold_engineered.pt python app.py
 عند غياب الأوزان يعرض التطبيق «بانتظار بيانات التدريب» ولا يُنشئ تصنيفات عشوائية.
 استخدم أوزانًا من مصادر موثوقة فقط.
 
+## تشغيل الواجهة على Google Colab
+
+لا تحتاج إلى إعادة تدريب النموذج أو تفعيل GPU. افتح دفتر Colab جديدًا وشغّل
+الخلايا التالية بالترتيب. عنوان `127.0.0.1` وحده لا يفتح واجهة Colab في متصفحك؛
+نستخدم ngrok لإنشاء رابط يصل إلى الخادم داخل الجلسة.
+
+### 1. تنزيل المشروع وتثبيت المكتبات
+
+```python
+!git clone https://github.com/Aishaas1/AI-porject-new.git
+%cd /content/AI-porject-new
+!pip -q install -r requirements.txt pyngrok requests
+```
+
+استخدم جلسة جديدة لتجنب التعارض مع إصدارات PyTorch المثبتة سابقًا. إذا طلب
+Colab إعادة تشغيل الجلسة بعد التثبيت، أعد تشغيلها ثم نفّذ هذه الخلية قبل المتابعة:
+
+```python
+%cd /content/AI-porject-new
+```
+
+إذا كان المستودع موجودًا بالفعل، انتقل إلى مجلده وحدّثه بواسطة
+`!git pull origin main` بدل تكرار أمر التنزيل، مع الحفاظ على تعديلاتك المحلية.
+
+### 2. إعداد ngrok دون كشف الرمز
+
+أنشئ حسابًا في [ngrok](https://dashboard.ngrok.com/signup)، واحصل على
+**Authtoken** من لوحة حسابك. أدخله في الحقل المخفي الذي تعرضه الخلية:
+
+```python
+from getpass import getpass
+from pyngrok import ngrok
+
+ngrok.set_auth_token(getpass("أدخل ngrok Authtoken: "))
+```
+
+لا تضع الرمز مباشرة في الكود، ولا ترفعه إلى GitHub أو ترسله في المحادثة.
+
+### 3. تشغيل التطبيق وفتح رابط الواجهة
+
+شغّل هذه الخلية مرة واحدة. قبل تكرارها، أوقف الخادم السابق باستخدام خلية الإيقاف
+أدناه حتى لا يتعارض المنفذ 5000.
+
+```python
+import os
+import subprocess
+import time
+import requests
+
+os.environ["GOLD_MODEL_PATH"] = "artifacts/gold_transfer.pt"
+
+log = open("/content/gold_app.log", "w")
+server = subprocess.Popen(
+    ["python", "app.py"],
+    stdout=log,
+    stderr=subprocess.STDOUT,
+    env=os.environ.copy()
+)
+
+ready = False
+for _ in range(60):
+    if server.poll() is not None:
+        break
+    try:
+        response = requests.get("http://127.0.0.1:5000/health", timeout=2)
+        if response.ok:
+            health = response.json()
+            if health.get("model_ready") and health.get("checkpoint") == "gold_transfer.pt":
+                ready = True
+                break
+    except requests.RequestException:
+        pass
+    time.sleep(1)
+
+if not ready:
+    if server.poll() is None:
+        server.terminate()
+        server.wait(timeout=10)
+    log.close()
+    print(open("/content/gold_app.log").read())
+    raise RuntimeError("لم يصبح الخادم جاهزًا؛ راجع السجل أعلاه قبل إعادة المحاولة.")
+
+try:
+    tunnel = ngrok.connect(5000, "http")
+    print("افتح الواجهة:", tunnel.public_url)
+except Exception:
+    server.terminate()
+    server.wait(timeout=10)
+    log.close()
+    raise
+```
+
+افتح الرابط المطبوع، ثم اختر صورة واضغط **«تحليل الصورة»**. إذا عرض ngrok
+صفحة تنبيه، تابع إلى الموقع. التطبيق يحمّل ResNet18 المدرّبة المرفقة تلقائيًا.
+
+الرابط متاح لمن يملكه، والواجهة لا تتضمن تسجيل دخول؛ لا تشاركه علنًا أو ترفع
+صورًا حساسة. يتوقف الوصول عند إغلاق النفق أو انتهاء جلسة Colab، ولا يُعد هذا
+إعداد استضافة دائمة أو نشرًا إنتاجيًا.
+
+### 4. إيقاف الواجهة
+
+بعد نجاح تشغيل الخلية السابقة، أوقف النفق والخادم عند الانتهاء:
+
+```python
+ngrok.disconnect(tunnel.public_url)
+server.terminate()
+server.wait(timeout=10)
+log.close()
+```
+
+إذا فشل التشغيل، يظهر سجل الخادم في الخلية. راجع أخطاء التثبيت أو غياب الأوزان
+قبل المتابعة؛ لا يلزم تدريب النموذج مجددًا لحل مشكلة تشغيل الواجهة.
+
 ## واجهة HTTP
 
 | المسار | الطريقة | الوظيفة |
