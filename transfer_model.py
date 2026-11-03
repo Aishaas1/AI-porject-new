@@ -30,10 +30,16 @@ class GoldResNet(nn.Module):
     def freeze(self):
         for parameter in self.backbone.parameters():
             parameter.requires_grad=False
-    def fine_tune(self):
+    def fine_tune(self, blocks=1):
+        if blocks not in (1, 2):
+            raise ValueError('Fine tuning supports one or two final blocks')
         self.freeze()
-        for parameter in self.backbone.layer4.parameters():
-            parameter.requires_grad=True
+        layers = [self.backbone.layer4]
+        if blocks == 2:
+            layers.insert(0, self.backbone.layer3)
+        for layer in layers:
+            for parameter in layer.parameters():
+                parameter.requires_grad=True
         for module in self.backbone.modules():
             if isinstance(module,nn.BatchNorm2d):
                 module.eval()

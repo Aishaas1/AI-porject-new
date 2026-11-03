@@ -3,7 +3,7 @@
 تطبيق بواجهة عربية لتصنيف **صور الذهب إلى حقيقي ومزيف** باستخدام التعلم العميق،
 مع مسار متكامل لتدقيق البيانات، والتدريب، والتقييم، ومقارنة التجارب.
 
-**أفضل نتيجة حالية: 84.16% على اختبار المشروع باستخدام ResNet18 / ImageNet.**
+**أفضل دقة حالية: 84.82% على اختبار المشروع باستخدام ResNet18 مع Fine-Tuning إضافي؛ زادت أخطاء قبول المزيف مقارنة بالنسخة السابقة.**
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.5.1-EE4C2C?logo=pytorch&logoColor=white)
@@ -25,7 +25,7 @@
 
 ## حالة النماذج والنتائج
 
-النسخة النشطة هي **ResNet18 بنقل التعلم من ImageNet** بعد التدريب على البيانات المنظفة، وليست MobileNetV2.
+النسخة النشطة هي **ResNet18 بنقل التعلم من ImageNet مع ضبط إضافي لآخر كتلتين** بعد التدريب على البيانات المنظفة، وليست MobileNetV2.
 حجم مدخلاتها 224×224، وترتيب الفئات: `fake = 0`، و`real = 1`.
 تظل GoldCNN الصغيرة السابقة مرفقة للمقارنة والتراجع، ومدخلاتها 128×128.
 
@@ -34,26 +34,28 @@
 | CNN الأولية | 72.52% | 72.94% |
 | استكمال التدريب بمعدل تعلم أقل | 74.50% | 73.93% |
 | CNN بعد تنظيف التداخل وإعادة التدريب من الصفر | **75.50%** | **76.90%** |
-| **ResNet18 / ImageNet — النشطة** | **83.77%** | **84.16%** |
+| ResNet18 / ImageNet السابقة | 83.77% | 84.16% |
+| **ResNet18 مع Fine-Tuning إضافي — النشطة** | **86.09%** | **84.82%** |
 | MobileNetV2 / ImageNet | لم يُنفذ التدريب الفعلي في هذه البيئة | غير مقاسة |
 
 نتائج ResNet18 النشطة على **303 صور اختبار**:
 
 | الفئة الفعلية ↓ / التنبؤ → | مزيف | حقيقي |
 | --- | ---: | ---: |
-| مزيف | 133 | 18 |
-| حقيقي | 30 | 122 |
+| مزيف | 130 | 21 |
+| حقيقي | 25 | 127 |
 
-تحسنت الدقة من 76.90% إلى **84.16%**، وانخفضت حالات اعتبار المزيف حقيقيًا
-من 32 إلى **18**. كشفت مراجعة البيانات مشهدًا متداخلًا بين التدريب والاختبار في
+تحسنت الدقة من 84.16% إلى **84.82%**، لكن زادت حالات اعتبار المزيف حقيقيًا
+من 18 إلى **21**؛ التحسن في الدقة الإجمالية لا يعني تحسن جميع الأخطاء. كشفت مراجعة البيانات مشهدًا متداخلًا بين التدريب والاختبار في
 التجارب القديمة؛ استُبعد من جميع تجارب التدريب المنظفة، بما فيها ResNet18.
 مجموعة الاختبار مستخدمة في جولات تطوير سابقة، ولا تمثل اختبارًا خارجيًا أعمى؛
 لا تعني النتيجة ضمان الدقة على مصادر صور جديدة.
 
-التفاصيل: [تقرير ResNet18](reports/ResNet18-transfer.md)،
+التفاصيل: [تقرير Fine-Tuning](reports/Fine-tuning.md)،
+[تقرير ResNet18](reports/ResNet18-transfer.md)،
 [تقرير هندسة البيانات](reports/Data-engineering.md)،
-[مقاييس الاختبار](reports/engineered_test_metrics.json)،
-[قرار اختيار النموذج](reports/engineering_selection.json).
+[مقاييس الاختبار الحالية](reports/finetuned_test_metrics.json)،
+[قرار اختيار GoldCNN السابقة](reports/engineering_selection.json).
 
 ## التشغيل السريع
 
@@ -83,11 +85,12 @@ python app.py
 
 ### النموذج المرفق
 
-- الأوزان النشطة: [`artifacts/gold_transfer.pt`](artifacts/gold_transfer.pt).
+- الأوزان النشطة: [`artifacts/gold_finetuned.pt`](artifacts/gold_finetuned.pt).
+- ResNet18 السابقة: [`artifacts/gold_transfer.pt`](artifacts/gold_transfer.pt).
 - أوزان المقارنة السابقة: [`artifacts/gold_engineered.pt`](artifacts/gold_engineered.pt).
-- مقاييس النموذج النشط: [`artifacts/gold_transfer.json`](artifacts/gold_transfer.json).
+- مقاييس النموذج النشط: [`artifacts/gold_finetuned.json`](artifacts/gold_finetuned.json).
 - اختيار النسخة السابقة: [`artifacts/gold_engineered.json`](artifacts/gold_engineered.json).
-- يحمّل التطبيق ResNet18 تلقائيًا عند توفرها، ثم يرجع إلى GoldCNN عند غيابها.
+- يحمّل التطبيق النسخة المضبوطة إضافيًا أولًا، ثم ResNet18 السابقة، ثم GoldCNN عند غيابهما.
 - حجم أوزان ResNet18 نحو 43 ميبيبايت؛ لا يحتاج تشغيلها إلى إعادة تنزيل ImageNet.
 - لا يتضمن المستودع صور التدريب أو بقية الأوزان التجريبية.
 - لا يُحفظ محتوى الصور المرفوعة على القرص.
@@ -150,7 +153,7 @@ import subprocess
 import time
 import requests
 
-os.environ["GOLD_MODEL_PATH"] = "artifacts/gold_transfer.pt"
+os.environ["GOLD_MODEL_PATH"] = "artifacts/gold_finetuned.pt"
 
 log = open("/content/gold_app.log", "w")
 server = subprocess.Popen(
@@ -168,7 +171,7 @@ for _ in range(60):
         response = requests.get("http://127.0.0.1:5000/health", timeout=2)
         if response.ok:
             health = response.json()
-            if health.get("model_ready") and health.get("checkpoint") == "gold_transfer.pt":
+            if health.get("model_ready") and health.get("checkpoint") == "gold_finetuned.pt":
                 ready = True
                 break
     except requests.RequestException:
@@ -303,7 +306,8 @@ OMP_NUM_THREADS=4 python evaluate.py \
 يحفظ التدريب أفضل الأوزان وفق دقة التحقق، مع خفض معدل التعلم عند توقف التحسن
 وإيقاف مبكر. تُحسم التعادلات لصالح التجربة الأبسط والأسبق.
 **في النتائج الحالية لم تتفوق زيادة التنوع أو معالجة الإضاءة على التجهيز الأساسي**،
-لذلك ليست مفعلة في النموذج المرفق. التحسن لا يُنسب إلى هذه المعالجات.
+لذلك لم تُفعّل في GoldCNN المختارة من هذه التجارب. هذه المقارنة تاريخية؛
+مسار Fine-Tuning الأحدث يستخدم انعكاسًا أفقيًا أثناء التدريب كما هو موثق أدناه.
 
 الأوامر تعيد توليد ملفات التجارب والتقارير، وقد تختلف النتائج قليلًا بين الأجهزة
 وإصدارات المكتبات. راجع قائمة الاستبعادات قبل استخدام بيانات مختلفة؛ سكربت الاختيار
@@ -357,7 +361,10 @@ MobileNetV2 مقاسة ضمن هذا الإصدار**. اختبارات هذا �
 ```text
 .
 ├── app.py                       # واجهة Flask ومسارات HTTP
-├── model.py                     # GoldCNN وتحميل أوزانها
+├── model.py                     # تحميل GoldCNN أو ResNet18 ومعالجتها
+├── transfer_model.py            # ResNet18 والتجميد ومعالجة ImageNet
+├── train_transfer.py            # تدريب الرأس ثم ضبط آخر كتلة
+├── fine_tune.py                 # ضبط إضافي لآخر كتلتين
 ├── mobilenet.py                 # MobileNetV2 والتجميد وإعادة التجميع
 ├── prepare_goldnet.py            # تجهيز البيانات والتقسيم والبصمات
 ├── audit_data.py                 # تدقيق الجودة والتكرار القريب
@@ -367,7 +374,9 @@ MobileNetV2 مقاسة ضمن هذا الإصدار**. اختبارات هذا �
 ├── train.py / evaluate.py        # تدريب CNN وتقييمها
 ├── train_mobilenet.py            # نقل التعلم على مرحلتين
 ├── evaluate_mobilenet.py         # تقييم Keras
-├── artifacts/gold_engineered.pt  # النموذج المختار المرفق
+├── artifacts/gold_finetuned.pt   # النموذج النشط بعد الضبط الإضافي
+├── artifacts/gold_transfer.pt    # ResNet18 السابقة للتراجع
+├── artifacts/gold_engineered.pt  # GoldCNN المنظفة السابقة
 ├── templates/index.html         # الواجهة العربية
 ├── reports/                     # التوثيق والتدقيق والمقاييس والتقسيمات
 ├── tests/                       # الاختبارات
@@ -381,7 +390,7 @@ python -m pip install pytest==8.4.2
 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python -m pytest -q
 ```
 
-نجحت **11 اختبارًا** في البيئة المستخدمة. تغطي دورة تدريب اصطناعية، والتحقق من
+نجحت **13 اختبارًا** في البيئة المستخدمة. تغطي دورة تدريب اصطناعية، والتحقق من
 تجميد طبقات MobileNetV2، وحفظ الأوزان وتحميلها، والمعالجة والاستبعادات، ورفع الصور.
 قد تظهر تحذيرات إهمال من توافق Keras/PyTorch مع NumPy؛ لا تُفسر الاختبارات
 الاصطناعية على أنها قياس لدقة تصنيف الذهب.
@@ -427,3 +436,40 @@ GOLD_MODEL_PATH=artifacts/gold_transfer.pt python app.py
 الاختيار عبر المرحلتين يستخدم دقة التحقق، وتكسر التعادلات بقلة أخطاء المزيف
 المصنف كحقيقي على التحقق. لا يقرأ التدريب مجموعة الاختبار.
 تفاصيل البروتوكول والنتائج في [تقرير ResNet18](reports/ResNet18-transfer.md).
+
+## Fine-Tuning إضافي لآخر كتلتين من ResNet18
+
+لتجربة ضبط أوسع انطلاقًا من أفضل أوزان ResNet18 الموجودة، مع الحفاظ على الأصل:
+
+```bash
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python fine_tune.py \
+  --initial artifacts/gold_transfer.pt \
+  --output artifacts/gold_finetuned.pt \
+  --epochs 8
+```
+
+يفتح هذا المسار `layer3` و`layer4` والرأس، ويبقي جميع طبقات BatchNormalization
+مجمدة، بمعدلات تعلم متدرجة `2e-6` و`5e-6` و`1e-5`. يطبق انعكاسًا أفقيًا على
+التدريب فقط و`label_smoothing=0.05`، مع خفض كوسيني لمعدلات التعلم وقص معيار
+التدرج. يعتمد الاختيار والإيقاف المبكر على التحقق فقط، ويدخل النموذج الأصلي
+ضمن المرشحين لضمان عدم فقد أفضل نتيجة تحقق.
+
+إعدادات المعالجة والتقسيم والاستبعادات هي نفسها لمسار ResNet18 الحالي.
+لتقييم ملف التجربة بعد اكتمالها:
+
+```bash
+OMP_NUM_THREADS=4 python evaluate.py --data data/goldnet/test --model artifacts/gold_finetuned.pt --output reports/finetuned_test_metrics.json
+```
+
+هذا تقييم تجريبي على اختبار سابق الاستخدام؛ لا يُستخدم لتعديل عتبة التصنيف.
+راجع [تقرير Fine-Tuning](reports/Fine-tuning.md) لمعرفة النتيجة والنسخة النشطة.
+
+
+نتيجة Fine-Tuning الإضافي: **86.09% تحقق، و84.82% اختبار**.
+النسخة `gold_finetuned.pt` هي الافتراضية عند توفرها. التحسن في الاختبار محدود
+(صورتان إضافيتان)، مع زيادة قبول المزيف من 18 إلى 21؛ راجع تقرير المقارنة.
+للتراجع إلى ResNet18 السابقة استخدم:
+
+```bash
+GOLD_MODEL_PATH=artifacts/gold_transfer.pt python app.py
+```

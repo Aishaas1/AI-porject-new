@@ -1,0 +1,19 @@
+{
+  "stage": "extended_fine_tune",
+  "epoch": 6,
+  "loss": 0.19828459567295323,
+  "validation_accuracy": 0.8609271523178808,
+  "confusion_matrix": [
+    [
+      136,
+      15
+    ],
+    [
+      27,
+      124
+    ]
+  ],
+  "train_images": 1401,
+  "val_images": 302,
+  "improved_over_initial": true
+}

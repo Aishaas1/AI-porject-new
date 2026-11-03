@@ -10,6 +10,7 @@ def create_app(model_path=None):
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 8*1024*1024
     default_path = next((candidate for candidate in (
+        'artifacts/gold_finetuned.pt',
         'artifacts/gold_transfer.pt',
         'artifacts/gold_engineered.pt', 'artifacts/gold_mobilenet.keras',
         'artifacts/gold_refined.pt', 'artifacts/gold.pt')
