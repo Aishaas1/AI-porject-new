@@ -1,0 +1,21 @@
+{
+  "images": 303,
+  "classes": [
+    "fake",
+    "real"
+  ],
+  "confusion_matrix": [
+    [
+      126,
+      25
+    ],
+    [
+      57,
+      95
+    ]
+  ],
+  "accuracy": 0.7293729372937293,
+  "real_precision": 0.7916666666666666,
+  "real_recall": 0.625,
+  "real_f1": 0.698529411764706
+}

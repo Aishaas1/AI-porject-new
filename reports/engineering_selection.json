@@ -1,0 +1,59 @@
+{
+  "criterion": "maximum validation accuracy; ties prefer earlier/simpler trial",
+  "selected_trial": "clean_control",
+  "checkpoint": "artifacts/gold_engineered.pt",
+  "checkpoint_sha256": "b4bed11b7c4f027db6ef847e08c88af5165794472bc55fee6ba8d4d94fe00c24",
+  "validation_accuracy": 0.7549668874172185,
+  "preprocessing": null,
+  "augmentation": false,
+  "metrics": {
+    "epoch": 27,
+    "loss": 0.4821214983073581,
+    "validation_accuracy": 0.7549668874172185,
+    "confusion_matrix": [
+      [
+        122,
+        29
+      ],
+      [
+        45,
+        106
+      ]
+    ],
+    "learning_rate": 0.00025,
+    "classes": [
+      "fake",
+      "real"
+    ],
+    "train_images": 1401,
+    "val_images": 302
+  },
+  "trials": [
+    {
+      "path": "artifacts/clean_control.pt",
+      "validation_accuracy": 0.7549668874172185,
+      "preprocessing": null,
+      "augmentation": false
+    },
+    {
+      "path": "artifacts/reflect_aug.pt",
+      "validation_accuracy": 0.7549668874172185,
+      "preprocessing": {
+        "version": "reflect_v1",
+        "size": 128,
+        "luminance_autocontrast": false
+      },
+      "augmentation": true
+    },
+    {
+      "path": "artifacts/luminance_aug.pt",
+      "validation_accuracy": 0.7516556291390728,
+      "preprocessing": {
+        "version": "reflect_v1",
+        "size": 128,
+        "luminance_autocontrast": true
+      },
+      "augmentation": true
+    }
+  ]
+}

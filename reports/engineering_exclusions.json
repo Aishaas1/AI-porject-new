@@ -1,0 +1,18 @@
+{
+  "method": "256-bit dHash distance <=8 followed by visual review; preserve validation and test membership",
+  "exclude_from_training": [
+    "train/real/r_img_005.jpg",
+    "train/real/r_img_984.jpg",
+    "train/real/r_img_988.jpg",
+    "train/real/r_img_990.jpg",
+    "train/real/r_img_986.jpg"
+  ],
+  "retained_counterparts": [
+    "train/real/r_img_004.jpg",
+    "train/real/r_img_959.jpg",
+    "train/real/r_img_956.jpg",
+    "train/real/r_img_953.jpg",
+    "test/real/r_img_950.jpg"
+  ],
+  "note": "Source files are preserved. These candidates show the same scenes/items with small image changes. The test-overlapping training image is excluded and all new trials initialize from scratch. Labels were not changed. This screening is not an exhaustive near-duplicate detector."
+}

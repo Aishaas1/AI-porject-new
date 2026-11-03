@@ -1,0 +1,21 @@
+{
+  "epoch": 8,
+  "loss": 0.5931702556345575,
+  "validation_accuracy": 0.7251655629139073,
+  "confusion_matrix": [
+    [
+      123,
+      28
+    ],
+    [
+      55,
+      96
+    ]
+  ],
+  "classes": [
+    "fake",
+    "real"
+  ],
+  "train_images": 1406,
+  "val_images": 302
+}

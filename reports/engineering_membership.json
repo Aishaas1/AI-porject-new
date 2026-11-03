@@ -1,0 +1,18 @@
+{
+  "counts": {
+    "train/fake": 702,
+    "train/real": 699,
+    "val/fake": 151,
+    "val/real": 151,
+    "test/fake": 151,
+    "test/real": 152
+  },
+  "excluded": [
+    "train/real/r_img_005.jpg",
+    "train/real/r_img_984.jpg",
+    "train/real/r_img_986.jpg",
+    "train/real/r_img_988.jpg",
+    "train/real/r_img_990.jpg"
+  ],
+  "source_images_unchanged": true
+}

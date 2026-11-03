@@ -1,0 +1,28 @@
+[
+  {
+    "path": "artifacts/clean_control.pt",
+    "validation_accuracy": 0.7549668874172185,
+    "preprocessing": null,
+    "augmentation": false
+  },
+  {
+    "path": "artifacts/reflect_aug.pt",
+    "validation_accuracy": 0.7549668874172185,
+    "preprocessing": {
+      "version": "reflect_v1",
+      "size": 128,
+      "luminance_autocontrast": false
+    },
+    "augmentation": true
+  },
+  {
+    "path": "artifacts/luminance_aug.pt",
+    "validation_accuracy": 0.7516556291390728,
+    "preprocessing": {
+      "version": "reflect_v1",
+      "size": 128,
+      "luminance_autocontrast": true
+    },
+    "augmentation": true
+  }
+]
