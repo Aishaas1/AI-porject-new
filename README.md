@@ -3,6 +3,8 @@
 تطبيق بواجهة عربية لتصنيف **صور الذهب إلى حقيقي ومزيف** باستخدام التعلم العميق،
 مع مسار متكامل لتدقيق البيانات، والتدريب، والتقييم، ومقارنة التجارب.
 
+**أفضل نتيجة حالية: 84.16% على اختبار المشروع باستخدام ResNet18 / ImageNet.**
+
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.5.1-EE4C2C?logo=pytorch&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1.2-000000?logo=flask&logoColor=white)
@@ -23,31 +25,33 @@
 
 ## حالة النماذج والنتائج
 
-النسخة المرفقة هي **GoldCNN بعد تنظيف البيانات**، وليست MobileNetV2.
-تتكون من ثلاث طبقات التفاف، وطبقات تجميع، وDropout، ورأس تصنيف ثنائي.
-حجم المدخلات 128×128، وترتيب الفئات: `fake = 0`، و`real = 1`.
+النسخة النشطة هي **ResNet18 بنقل التعلم من ImageNet** بعد التدريب على البيانات المنظفة، وليست MobileNetV2.
+حجم مدخلاتها 224×224، وترتيب الفئات: `fake = 0`، و`real = 1`.
+تظل GoldCNN الصغيرة السابقة مرفقة للمقارنة والتراجع، ومدخلاتها 128×128.
 
 | التجربة | دقة التحقق | دقة الاختبار |
 | --- | ---: | ---: |
 | CNN الأولية | 72.52% | 72.94% |
 | استكمال التدريب بمعدل تعلم أقل | 74.50% | 73.93% |
-| CNN بعد تنظيف التداخل وإعادة التدريب من الصفر — المرفقة | **75.50%** | **76.90%** |
+| CNN بعد تنظيف التداخل وإعادة التدريب من الصفر | **75.50%** | **76.90%** |
+| **ResNet18 / ImageNet — النشطة** | **83.77%** | **84.16%** |
 | MobileNetV2 / ImageNet | لم يُنفذ التدريب الفعلي في هذه البيئة | غير مقاسة |
 
-نتائج النسخة المرفقة على **303 صور اختبار**:
+نتائج ResNet18 النشطة على **303 صور اختبار**:
 
 | الفئة الفعلية ↓ / التنبؤ → | مزيف | حقيقي |
 | --- | ---: | ---: |
-| مزيف | 119 | 32 |
-| حقيقي | 38 | 114 |
+| مزيف | 133 | 18 |
+| حقيقي | 30 | 122 |
 
-الدقة الأعلى لا تعني تحسن جميع الأخطاء: ارتفعت حالات اعتبار المزيف حقيقيًا
-من 27 في النسخة السابقة إلى 32. كما كشفت مراجعة البيانات مشهدًا متداخلًا بين
-التدريب والاختبار في التجارب القديمة؛ استُبعد من تدريب النسخة الجديدة.
-مجموعة الاختبار مستخدمة في جولات تطوير سابقة، ولا تمثل اختبارًا خارجيًا أعمى،
-ولم تُثبت الدلالة الإحصائية للفروق.
+تحسنت الدقة من 76.90% إلى **84.16%**، وانخفضت حالات اعتبار المزيف حقيقيًا
+من 32 إلى **18**. كشفت مراجعة البيانات مشهدًا متداخلًا بين التدريب والاختبار في
+التجارب القديمة؛ استُبعد من جميع تجارب التدريب المنظفة، بما فيها ResNet18.
+مجموعة الاختبار مستخدمة في جولات تطوير سابقة، ولا تمثل اختبارًا خارجيًا أعمى؛
+لا تعني النتيجة ضمان الدقة على مصادر صور جديدة.
 
-التفاصيل: [تقرير هندسة البيانات](reports/Data-engineering.md)،
+التفاصيل: [تقرير ResNet18](reports/ResNet18-transfer.md)،
+[تقرير هندسة البيانات](reports/Data-engineering.md)،
 [مقاييس الاختبار](reports/engineered_test_metrics.json)،
 [قرار اختيار النموذج](reports/engineering_selection.json).
 
@@ -67,7 +71,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 # نسخة PyTorch المخصصة لـ CPU لتجنب تنزيل مكتبات CUDA غير اللازمة
-python -m pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install -r requirements.txt
 
 python app.py
@@ -79,9 +83,12 @@ python app.py
 
 ### النموذج المرفق
 
-- الأوزان: [`artifacts/gold_engineered.pt`](artifacts/gold_engineered.pt).
-- معلومات الاختيار: [`artifacts/gold_engineered.json`](artifacts/gold_engineered.json).
-- يحمّل التطبيق هذا النموذج تلقائيًا عند التشغيل من جذر المستودع.
+- الأوزان النشطة: [`artifacts/gold_transfer.pt`](artifacts/gold_transfer.pt).
+- أوزان المقارنة السابقة: [`artifacts/gold_engineered.pt`](artifacts/gold_engineered.pt).
+- مقاييس النموذج النشط: [`artifacts/gold_transfer.json`](artifacts/gold_transfer.json).
+- اختيار النسخة السابقة: [`artifacts/gold_engineered.json`](artifacts/gold_engineered.json).
+- يحمّل التطبيق ResNet18 تلقائيًا عند توفرها، ثم يرجع إلى GoldCNN عند غيابها.
+- حجم أوزان ResNet18 نحو 43 ميبيبايت؛ لا يحتاج تشغيلها إلى إعادة تنزيل ImageNet.
 - لا يتضمن المستودع صور التدريب أو بقية الأوزان التجريبية.
 - لا يُحفظ محتوى الصور المرفوعة على القرص.
 
@@ -261,7 +268,7 @@ python -m pip install pytest==8.4.2
 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python -m pytest -q
 ```
 
-نجحت **10 اختبارات** في البيئة المستخدمة. تغطي دورة تدريب اصطناعية، والتحقق من
+نجحت **11 اختبارًا** في البيئة المستخدمة. تغطي دورة تدريب اصطناعية، والتحقق من
 تجميد طبقات MobileNetV2، وحفظ الأوزان وتحميلها، والمعالجة والاستبعادات، ورفع الصور.
 قد تظهر تحذيرات إهمال من توافق Keras/PyTorch مع NumPy؛ لا تُفسر الاختبارات
 الاصطناعية على أنها قياس لدقة تصنيف الذهب.
@@ -287,3 +294,23 @@ OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python -m pytest -q
 
 ترخيص البيانات لا يمنح تلقائيًا ترخيصًا لشيفرة هذا المشروع؛ لم يُضف ترخيص مستقل
 للشيفرة ضمن هذا الإصدار.
+
+
+## نقل التعلم باستخدام ResNet18
+
+أضيف مسار CNN مدرب مسبقًا على ImageNet من توزيعة PyTorch الرسمية، مختلف عن
+MobileNetV2 الخاص بـ Keras. يستخدم الصور الكاملة بدقة 224×224 مع تطبيع ImageNet،
+وعضوية التدريب المنظفة نفسها، ثم تدريب الرأس وضبط آخر كتلة بمعدل `1e-5`،
+مع تجميد جميع معاملات وإحصاءات BatchNormalization.
+
+```bash
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python train_transfer.py
+OMP_NUM_THREADS=4 python evaluate.py --data data/goldnet/test --model artifacts/gold_transfer.pt --output reports/transfer_test_metrics.json
+GOLD_MODEL_PATH=artifacts/gold_transfer.pt python app.py
+```
+
+يتطلب التدريب الأول تنزيل أوزان ResNet18 من `download.pytorch.org`،
+ويتحقق torchvision من البصمة. تحميل الأوزان المحلية لاحقًا لا يتطلب الاتصال.
+الاختيار عبر المرحلتين يستخدم دقة التحقق، وتكسر التعادلات بقلة أخطاء المزيف
+المصنف كحقيقي على التحقق. لا يقرأ التدريب مجموعة الاختبار.
+تفاصيل البروتوكول والنتائج في [تقرير ResNet18](reports/ResNet18-transfer.md).

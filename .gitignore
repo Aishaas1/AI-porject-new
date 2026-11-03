@@ -4,6 +4,8 @@ __pycache__/
 /artifacts/*
 !/artifacts/gold_engineered.pt
 !/artifacts/gold_engineered.json
+!/artifacts/gold_transfer.pt
+!/artifacts/gold_transfer.json
 /data/
 .env
 .env.*

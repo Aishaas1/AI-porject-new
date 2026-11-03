@@ -10,6 +10,7 @@ def create_app(model_path=None):
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 8*1024*1024
     default_path = next((candidate for candidate in (
+        'artifacts/gold_transfer.pt',
         'artifacts/gold_engineered.pt', 'artifacts/gold_mobilenet.keras',
         'artifacts/gold_refined.pt', 'artifacts/gold.pt')
         if Path(candidate).is_file()), 'artifacts/gold.pt')
@@ -29,7 +30,7 @@ def create_app(model_path=None):
     def health():
         return jsonify(status='ok', model_ready=model is not None,
                        checkpoint=path.name if model is not None else None,
-                       architecture=('MobileNetV2' if is_mobilenet else 'GoldCNN') if model is not None else None)
+                       architecture=('MobileNetV2' if is_mobilenet else getattr(model, 'architecture', 'GoldCNN')) if model is not None else None)
     @app.errorhandler(RequestEntityTooLarge)
     def too_large(error):
         return jsonify(error='حجم الملف يتجاوز 8 ميجابايت'), 413
