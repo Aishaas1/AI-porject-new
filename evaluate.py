@@ -12,7 +12,8 @@ def evaluate(data, model_path):
     matrix = torch.zeros((2, 2), dtype=torch.int64)
     with torch.inference_mode():
         for images, labels in DataLoader(dataset, batch_size=32):
-            for actual, predicted in zip(labels, model(images).argmax(1)):
+            predictions = (model(images).softmax(1)[:,1] > getattr(model,'decision_threshold',.5)).long()
+            for actual, predicted in zip(labels, predictions):
                 matrix[actual, predicted] += 1
     tp = matrix[1,1].item()
     precision = tp/max(1, matrix[:,1].sum().item())

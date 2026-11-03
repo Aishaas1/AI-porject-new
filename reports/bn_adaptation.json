@@ -1,0 +1,90 @@
+{
+  "training_only": true,
+  "initial_sha256": "9f585390e29b5059e620964edcab73cfa0a5b102ded00776e3d9e35cc2eea627",
+  "selected": {
+    "alpha": 0.25,
+    "validation_accuracy": 0.8807947019867549,
+    "confusion_matrix": [
+      [
+        129,
+        22
+      ],
+      [
+        14,
+        137
+      ]
+    ]
+  },
+  "trials": [
+    {
+      "alpha": 0.0,
+      "validation_accuracy": 0.8807947019867549,
+      "confusion_matrix": [
+        [
+          128,
+          23
+        ],
+        [
+          13,
+          138
+        ]
+      ]
+    },
+    {
+      "alpha": 0.25,
+      "validation_accuracy": 0.8807947019867549,
+      "confusion_matrix": [
+        [
+          129,
+          22
+        ],
+        [
+          14,
+          137
+        ]
+      ]
+    },
+    {
+      "alpha": 0.5,
+      "validation_accuracy": 0.8642384105960265,
+      "confusion_matrix": [
+        [
+          130,
+          21
+        ],
+        [
+          20,
+          131
+        ]
+      ]
+    },
+    {
+      "alpha": 0.75,
+      "validation_accuracy": 0.8543046357615894,
+      "confusion_matrix": [
+        [
+          132,
+          19
+        ],
+        [
+          25,
+          126
+        ]
+      ]
+    },
+    {
+      "alpha": 1.0,
+      "validation_accuracy": 0.8245033112582781,
+      "confusion_matrix": [
+        [
+          130,
+          21
+        ],
+        [
+          32,
+          119
+        ]
+      ]
+    }
+  ]
+}

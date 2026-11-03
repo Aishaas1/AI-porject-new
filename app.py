@@ -10,6 +10,7 @@ def create_app(model_path=None):
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 8*1024*1024
     default_path = next((candidate for candidate in (
+        'artifacts/gold_selected.pt',
         'artifacts/gold_finetuned.pt',
         'artifacts/gold_transfer.pt',
         'artifacts/gold_engineered.pt', 'artifacts/gold_mobilenet.keras',
@@ -60,7 +61,9 @@ def create_app(model_path=None):
         else:
             with torch.inference_mode():
                 scores = model(tensor).softmax(1)[0]
-        return jsonify(label='حقيقي' if scores.argmax().item() == 1 else 'مزيف',
+        threshold = getattr(model, 'decision_threshold', .5)
+        return jsonify(label='حقيقي' if float(scores[1]) > threshold else 'مزيف',
+                       decision_threshold=threshold,
                        real_score=round(scores[1].item()*100, 2), fake_score=round(scores[0].item()*100, 2),
                        warning='تقدير بصري غير معاير وليس إثباتاً لأصالة الذهب أو نقائه.')
     return app

@@ -20,7 +20,7 @@ class GoldCNN(nn.Module):
 def image_tensor(image, preprocessing=None):
     if preprocessing and preprocessing.get('version') == 'imagenet_v1':
         from transfer_model import transfer_tensor
-        return transfer_tensor(image)
+        return transfer_tensor(image, preprocessing.get('size',224))
     if preprocessing:
         from data_engineering import engineered_tensor
         return engineered_tensor(image, preprocessing)
@@ -35,10 +35,32 @@ def load_model(path):
     if architecture == 'resnet18':
         from transfer_model import GoldResNet
         model = GoldResNet(pretrained=False)
+    elif architecture == 'efficientnet_b0':
+        from efficient_model import GoldEfficientNet
+        model = GoldEfficientNet()
+    elif architecture == 'fusion':
+        from efficient_model import GoldFusion
+        model = GoldFusion(checkpoint['fusion_weight'])
+    elif architecture == 'tta':
+        from efficient_model import GoldFusion, GoldEfficientNet, GoldTTA
+        from transfer_model import GoldResNet
+        base_architecture = checkpoint['base_architecture']
+        if base_architecture == 'resnet18':
+            base = GoldResNet()
+        elif base_architecture == 'efficientnet_b0':
+            base = GoldEfficientNet()
+        elif base_architecture == 'fusion':
+            base = GoldFusion(checkpoint['fusion_weight'])
+        else:
+            raise ValueError('Unsupported TTA base architecture')
+        model = GoldTTA(base)
     elif architecture == 'goldcnn':
         model = GoldCNN()
     else:
         raise ValueError('Unsupported model architecture')
     model.load_state_dict(checkpoint['state_dict'])
     model.preprocessing = checkpoint.get('preprocessing')
+    model.decision_threshold = float(checkpoint.get('decision_threshold', .5))
+    if not 0 < model.decision_threshold < 1:
+        raise ValueError('Invalid decision threshold')
     return model.eval()

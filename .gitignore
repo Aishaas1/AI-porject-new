@@ -8,6 +8,8 @@ __pycache__/
 !/artifacts/gold_transfer.json
 !/artifacts/gold_finetuned.pt
 !/artifacts/gold_finetuned.json
+!/artifacts/gold_selected.pt
+!/artifacts/gold_selected.json
 /data/
 .env
 .env.*

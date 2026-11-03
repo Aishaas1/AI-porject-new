@@ -10,8 +10,10 @@ os.environ.setdefault('TORCH_HOME',str(Path(__file__).resolve().parent.parent/'t
 CONFIG = {'version':'imagenet_v1','size':224}
 
 
-def transfer_tensor(image):
-    image=ImageOps.pad(ImageOps.exif_transpose(image).convert('RGB'),(224,224))
+def transfer_tensor(image, size=224):
+    if size not in (224,320):
+        raise ValueError('Unsupported ImageNet input size')
+    image=ImageOps.pad(ImageOps.exif_transpose(image).convert('RGB'),(size,size))
     tensor=torch.from_numpy(np.asarray(image,dtype=np.float32).copy()/255).permute(2,0,1)
     return (tensor-torch.tensor([.485,.456,.406])[:,None,None])/torch.tensor([.229,.224,.225])[:,None,None]
 
