@@ -117,8 +117,8 @@ GOLD_MODEL_PATH=artifacts/gold_engineered.pt python app.py
 افتح [Gold_Classifier_Colab.ipynb](notebooks/Gold_Classifier_Colab.ipynb) وشغّل خلاياه بالترتيب.
 يتضمن تنزيل المشروع، وتثبيت مكتباته في بيئة Python معزولة، والتحقق من بصمة الأوزان،
 وتشغيل الخادم، ورابط ngrok، واختبار صورة داخل الدفتر دون رابط عام.
-لا يلزم تدريب أو GPU لتشغيل النموذج المرفق. أدخل رمز ngrok في الحقل المخفي أو
-احفظه في أسرار Colab باسم `NGROK_AUTHTOKEN`؛ لا تضعه في الكود.
+لا يلزم تدريب أو GPU لتشغيل النموذج المرفق. احفظ رمز ngrok في أسرار Colab باسم `NGROK_AUTHTOKEN` وفعّل وصول الدفتر إليه؛
+لا تضعه في الكود. يقرأ الدفتر السر مباشرة لتفادي اختلاف سلوك `getpass` بين الواجهات.
 
 إعادة التدريب والتقييم وتنزيل حزمة النتائج متاحة في أقسام اختيارية معطلة افتراضيًا.
 تستخدم إعادة التدريب نسخة منفصلة للمستودع كي لا تغيّر أوزان الواجهة العاملة.
@@ -154,19 +154,34 @@ Colab إعادة تشغيل الجلسة بعد التثبيت، أعد تشغي
 إذا كان المستودع موجودًا بالفعل، انتقل إلى مجلده وحدّثه بواسطة
 `!git pull origin main` بدل تكرار أمر التنزيل، مع الحفاظ على تعديلاتك المحلية.
 
-### 2. إعداد ngrok دون كشف الرمز
+### 2. إعداد ngrok باستخدام أسرار Colab
 
-أنشئ حسابًا في [ngrok](https://dashboard.ngrok.com/signup)، واحصل على
-**Authtoken** من لوحة حسابك. أدخله في الحقل المخفي الذي تعرضه الخلية:
+أنشئ حسابًا في [ngrok](https://dashboard.ngrok.com/signup)، وانسخ **Authtoken**.
+افتح أيقونة المفتاح **Secrets / الأسرار** في Colab، وأضف سرًا اسمه
+`NGROK_AUTHTOKEN` وقيمته الرمز، ثم فعّل **Notebook access**.
 
 ```python
-from getpass import getpass
+from google.colab import userdata
 from pyngrok import ngrok
 
-ngrok.set_auth_token(getpass("أدخل ngrok Authtoken: "))
+def configure_ngrok_secret():
+    try:
+        token = userdata.get("NGROK_AUTHTOKEN")
+    except Exception:
+        raise RuntimeError("أضف السر NGROK_AUTHTOKEN وفعّل وصول الدفتر إليه.") from None
+    if not isinstance(token, str) or not token.strip():
+        raise RuntimeError("السر يجب أن يكون نصًا غير فارغ؛ افحصه في إعدادات الأسرار.")
+    try:
+        ngrok.set_auth_token(token.strip())
+    except Exception:
+        raise RuntimeError("تعذر إعداد رمز ngrok؛ تحقق منه في الأسرار دون طباعته.") from None
+
+configure_ngrok_secret()
 ```
 
-لا تضع الرمز مباشرة في الكود، ولا ترفعه إلى GitHub أو ترسله في المحادثة.
+لا ترسل الرمز في المحادثة ولا تحفظه داخل كود الدفتر. إذا ظهر خطأ
+`AttributeError: 'dict' object has no attribute 'strip'` في نسخة قديمة، استبدل
+خلية `getpass` بهذه الخلية؛ لا يلزم إعادة التثبيت أو التدريب.
 
 ### 3. تشغيل التطبيق وفتح رابط الواجهة
 
