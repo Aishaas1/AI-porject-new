@@ -110,153 +110,42 @@ GOLD_MODEL_PATH=artifacts/gold_engineered.pt python app.py
 عند غياب الأوزان يعرض التطبيق «بانتظار بيانات التدريب» ولا يُنشئ تصنيفات عشوائية.
 استخدم أوزانًا من مصادر موثوقة فقط.
 
-## ملف Google Colab الجاهز
+## تشغيل المشروع على Google Colab — دون ngrok أو حساب خارجي
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Aishaas1/AI-porject-new/blob/main/notebooks/Gold_Classifier_Colab.ipynb)
 
-افتح [Gold_Classifier_Colab.ipynb](notebooks/Gold_Classifier_Colab.ipynb) وشغّل خلاياه بالترتيب.
-يتضمن تنزيل المشروع، وتثبيت مكتباته في بيئة Python معزولة، والتحقق من بصمة الأوزان،
-وتشغيل الخادم، ورابط ngrok، واختبار صورة داخل الدفتر دون رابط عام.
-لا يلزم تدريب أو GPU لتشغيل النموذج المرفق. احفظ رمز ngrok في أسرار Colab باسم `NGROK_AUTHTOKEN` وفعّل وصول الدفتر إليه؛
-لا تضعه في الكود. يقرأ الدفتر السر مباشرة لتفادي اختلاف سلوك `getpass` بين الواجهات.
+افتح [Gold_Classifier_Colab.ipynb](notebooks/Gold_Classifier_Colab.ipynb) وشغّل الخلايا بالترتيب.
+يثبّت الدفتر المكتبات في بيئة معزولة، ويفحص بصمة الأوزان، ويشغّل الخادم المحلي.
+لا يلزم إعادة تدريب أو GPU. توجد طريقتان لعرض النتائج، وكلتاهما دون رموز أو حساب ngrok:
 
-إعادة التدريب والتقييم وتنزيل حزمة النتائج متاحة في أقسام اختيارية معطلة افتراضيًا.
-تستخدم إعادة التدريب نسخة منفصلة للمستودع كي لا تغيّر أوزان الواجهة العاملة.
-خلية الإيقاف معطلة افتراضيًا أيضًا حتى لا تُغلق الخدمة مباشرةً عند «تشغيل الكل»؛
-فعّلها عند الانتهاء. التشغيل قائم على CPU، والنفق يتوقف بانتهاء جلسة Colab.
+1. **الواجهة الأصلية داخل Colab:** يستخدم القسم 6 وكيل منافذ Colab المدمج.
+2. **رفع الصور داخل الدفتر:** يعرض القسم 7 زر اختيار الصورة وزر «تحليل الصورة» باستخدام
+   ipywidgets، ويتصل بالخادم المحلي مباشرة. هذه الطريقة لا تعتمد على وكيل المنافذ وتبقى
+   متاحة إذا لم يعرض المتصفح إطار الواجهة.
 
-تحققنا محليًا من صيغة الدفتر، والتثبيت في بيئة فارغة، وفحص الأوزان، وتشغيل الخادم،
-ورفع صورة اختبار، وإعادة التشغيل والإيقاف. إعادة التدريب الاختيارية لم تُكرر ضمن فحص الدفتر. لم نجر جلسة Colab حية أو نفتح نفق ngrok عام أثناء التحقق؛
-هذان يعتمدان على جلسة المستخدم ورمز حسابه. النتيجة المسجلة للنموذج **88.45%**؛
-الدفتر لا يضمن الوصول إلى 90% عند إعادة التدريب.
-
-## تشغيل الواجهة على Google Colab
-
-لا تحتاج إلى إعادة تدريب النموذج أو تفعيل GPU. افتح دفتر Colab جديدًا وشغّل
-الخلايا التالية بالترتيب. عنوان `127.0.0.1` وحده لا يفتح واجهة Colab في متصفحك؛
-نستخدم ngrok لإنشاء رابط يصل إلى الخادم داخل الجلسة.
-
-### 1. تنزيل المشروع وتثبيت المكتبات
+إذا كان الخادم يعمل بالفعل في دفتر قديم، استبدل خلية ngrok بهذه الخلية:
 
 ```python
-!git clone https://github.com/Aishaas1/AI-porject-new.git
-%cd /content/AI-porject-new
-!pip -q install -r requirements.txt pyngrok requests
+from google.colab import output
+output.serve_kernel_port_as_iframe(PORT, height=800)
 ```
 
-استخدم جلسة جديدة لتجنب التعارض مع إصدارات PyTorch المثبتة سابقًا. إذا طلب
-Colab إعادة تشغيل الجلسة بعد التثبيت، أعد تشغيلها ثم نفّذ هذه الخلية قبل المتابعة:
+إذا لم يظهر الإطار، استخدم واجهة رفع الصور في القسم 7 من الملف المحدث. لا يلزم
+تسجيل الدخول في خدمة أنفاق ولا إدخال `NGROK_AUTHTOKEN`. لا حاجة إلى تغيير موقعك
+الجغرافي أو إعادة تثبيت النموذج. يمكن تعطيل الإطار باستخدام `SHOW_WEB_UI=False`.
 
-```python
-%cd /content/AI-porject-new
-```
+رفع الصورة يدعم بنيتي ipywidgets 7 و8، ويتحقق من بايتات الملف، ويعرض النتيجة والدرجات
+وعتبة 55%. تبقى الصور في ذاكرة الدفتر ولا تُرفع إلى GitHub. الواجهة لا تثبت أصالة الذهب.
 
-إذا كان المستودع موجودًا بالفعل، انتقل إلى مجلده وحدّثه بواسطة
-`!git pull origin main` بدل تكرار أمر التنزيل، مع الحفاظ على تعديلاتك المحلية.
+إعادة التدريب والتقييم وتنزيل النتائج متاحة في أقسام اختيارية معطلة افتراضيًا،
+وتستخدم نسخة منفصلة للمستودع كي لا تغيّر أوزان التطبيق العامل. خلية الإيقاف معطلة
+افتراضيًا حتى لا تُغلق الخدمة مباشرة عند «تشغيل الكل»؛ فعّلها عند الانتهاء.
+الخادم يعمل على CPU، ويتوقف الوصول بانتهاء جلسة Colab؛ لا توجد استضافة دائمة.
 
-### 2. إعداد ngrok باستخدام أسرار Colab
-
-أنشئ حسابًا في [ngrok](https://dashboard.ngrok.com/signup)، وانسخ **Authtoken**.
-افتح أيقونة المفتاح **Secrets / الأسرار** في Colab، وأضف سرًا اسمه
-`NGROK_AUTHTOKEN` وقيمته الرمز، ثم فعّل **Notebook access**.
-
-```python
-from google.colab import userdata
-from pyngrok import ngrok
-
-def configure_ngrok_secret():
-    try:
-        token = userdata.get("NGROK_AUTHTOKEN")
-    except Exception:
-        raise RuntimeError("أضف السر NGROK_AUTHTOKEN وفعّل وصول الدفتر إليه.") from None
-    if not isinstance(token, str) or not token.strip():
-        raise RuntimeError("السر يجب أن يكون نصًا غير فارغ؛ افحصه في إعدادات الأسرار.")
-    try:
-        ngrok.set_auth_token(token.strip())
-    except Exception:
-        raise RuntimeError("تعذر إعداد رمز ngrok؛ تحقق منه في الأسرار دون طباعته.") from None
-
-configure_ngrok_secret()
-```
-
-لا ترسل الرمز في المحادثة ولا تحفظه داخل كود الدفتر. إذا ظهر خطأ
-`AttributeError: 'dict' object has no attribute 'strip'` في نسخة قديمة، استبدل
-خلية `getpass` بهذه الخلية؛ لا يلزم إعادة التثبيت أو التدريب.
-
-### 3. تشغيل التطبيق وفتح رابط الواجهة
-
-شغّل هذه الخلية مرة واحدة. قبل تكرارها، أوقف الخادم السابق باستخدام خلية الإيقاف
-أدناه حتى لا يتعارض المنفذ 5000.
-
-```python
-import os
-import subprocess
-import time
-import requests
-
-os.environ["GOLD_MODEL_PATH"] = "artifacts/gold_selected.pt"
-
-log = open("/content/gold_app.log", "w")
-server = subprocess.Popen(
-    ["python", "app.py"],
-    stdout=log,
-    stderr=subprocess.STDOUT,
-    env=os.environ.copy()
-)
-
-ready = False
-for _ in range(60):
-    if server.poll() is not None:
-        break
-    try:
-        response = requests.get("http://127.0.0.1:5000/health", timeout=2)
-        if response.ok:
-            health = response.json()
-            if health.get("model_ready") and health.get("checkpoint") == "gold_selected.pt":
-                ready = True
-                break
-    except requests.RequestException:
-        pass
-    time.sleep(1)
-
-if not ready:
-    if server.poll() is None:
-        server.terminate()
-        server.wait(timeout=10)
-    log.close()
-    print(open("/content/gold_app.log").read())
-    raise RuntimeError("لم يصبح الخادم جاهزًا؛ راجع السجل أعلاه قبل إعادة المحاولة.")
-
-try:
-    tunnel = ngrok.connect(5000, "http")
-    print("افتح الواجهة:", tunnel.public_url)
-except Exception:
-    server.terminate()
-    server.wait(timeout=10)
-    log.close()
-    raise
-```
-
-افتح الرابط المطبوع، ثم اختر صورة واضغط **«تحليل الصورة»**. إذا عرض ngrok
-صفحة تنبيه، تابع إلى الموقع. التطبيق يحمّل النموذج المدمج المرفق تلقائيًا.
-
-الرابط متاح لمن يملكه، والواجهة لا تتضمن تسجيل دخول؛ لا تشاركه علنًا أو ترفع
-صورًا حساسة. يتوقف الوصول عند إغلاق النفق أو انتهاء جلسة Colab، ولا يُعد هذا
-إعداد استضافة دائمة أو نشرًا إنتاجيًا.
-
-### 4. إيقاف الواجهة
-
-بعد نجاح تشغيل الخلية السابقة، أوقف النفق والخادم عند الانتهاء:
-
-```python
-ngrok.disconnect(tunnel.public_url)
-server.terminate()
-server.wait(timeout=10)
-log.close()
-```
-
-إذا فشل التشغيل، يظهر سجل الخادم في الخلية. راجع أخطاء التثبيت أو غياب الأوزان
-قبل المتابعة؛ لا يلزم تدريب النموذج مجددًا لحل مشكلة تشغيل الواجهة.
+اختُبر التثبيت وفحص النموذج والخادم ورفع الصورة محليًا. عرض إطار Colab يعتمد على
+جلسة المستخدم والمتصفح، ولم نختبر اتصالًا حيًا إلى واجهة Google خلال التطوير.
+إن لم تظهر أزرار widgets، أعد خلية القسم 7 وتأكد من دعم widgets في جلسة Colab/Jupyter.
+النتيجة المسجلة للنموذج **88.45%**؛ لا يضمن الدفتر الوصول إلى 90% عند إعادة التدريب.
 
 ## واجهة HTTP
 
