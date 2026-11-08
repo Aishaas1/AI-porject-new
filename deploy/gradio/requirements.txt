@@ -1,0 +1,8 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+Flask==3.1.2
+Pillow==11.3.0
+numpy==2.2.6
+keras==3.11.3
+gradio==5.49.1
